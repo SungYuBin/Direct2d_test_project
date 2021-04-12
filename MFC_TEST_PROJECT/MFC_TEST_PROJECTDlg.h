@@ -26,7 +26,7 @@ public:
 
 
 private:
-	std::vector<CPoint> rect_start_pos; //마우스가 클릭되었을때 좌표를 저장할 변수 
+	std::vector<CPoint> rect_pos; //마우스가 클릭되었을때 좌표를 저장할 변수 
 	CPoint mouse_point;
 
 // 구현입니다.
@@ -53,7 +53,7 @@ public:
 	HRESULT CreateDeviceIndependentResources();
 	HRESULT CreateDeviceResources();
 
-	void OnPaintRenderTarget();
+	//void OnPaintRenderTarget();
 	void OnCreatRenderTarget(HWND hWnd);
 
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
@@ -62,7 +62,7 @@ public:
 
 public:
 
-	void MouseMovingPoint(CPoint point);
-	virtual BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
+	//void MouseMovingPoint(CPoint point);
+	//virtual BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 };
   

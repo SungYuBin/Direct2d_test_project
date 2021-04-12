@@ -56,18 +56,6 @@ CMFCTESTPROJECTDlg::CMFCTESTPROJECTDlg(CWnd* pParent /*=nullptr*/)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
-	HRESULT hr = CreateDeviceIndependentResources();
-
-	if (SUCCEEDED(hr))
-	{
-
-	}
-
-
-	//hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &g_ipD2Factory);
-
-
-	//assert(hr == S_OK);
 
 }
 
@@ -120,7 +108,7 @@ BOOL CMFCTESTPROJECTDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
-
+	OnCreatRenderTarget(GetSafeHwnd());
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
 
@@ -137,20 +125,13 @@ void CMFCTESTPROJECTDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	}
 }
 
+
 // 대화 상자에 최소화 단추를 추가할 경우 아이콘을 그리려면
 //  아래 코드가 필요합니다.  문서/뷰 모델을 사용하는 MFC 응용 프로그램의 경우에는
 //  프레임워크에서 이 작업을 자동으로 수행합니다.
 //
-void CMFCTESTPROJECTDlg::OnPaint()
+void CMFCTESTPROJECTDlg::OnPaint() //그림을 유지합니다.
 {
-	CPaintDC dc(this);
-	CString str;
-	str.Format(_T("X=%d, Y= %d"), mouse_point, mouse_point.y);
-	dc.TextOut(mouse_point.x, mouse_point.y, str);
-
-	MouseMovingPoint(mouse_point); //마우스의 위치를 계속 화면에 표출합니다.
-
-
 	g_ipRenderTarget->BeginDraw();
 	g_ipRenderTarget->Clear(D2D1::ColorF(0.0f, 0.8f, 1.0f)); //도면 영역을 지정된 색상으로 지웁니다.
 
@@ -168,35 +149,24 @@ void CMFCTESTPROJECTDlg::OnPaint()
 	p_yellow_brush->Release();
 	p_yellow_brush = nullptr;
 
+	ID2D1SolidColorBrush* p_black_brush = nullptr;
+	g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 0.0f), &p_black_brush);
+
+
+	if (rect_pos.size() != 0)
+	{
+		//가장 처음의 위치를 불러와서 첫 위치를 지정해줍니다
+		//rect_pos[0];
+		//g_ipRenderTarget->DrawLine(D2D1::Point2F(rect_pos[0].x, rect_pos[0].y), D2D1::Point2F(point.x, point.y), p_black_brush, 0.5f);
+	}
+
+	CPaintDC dc(this); //화면에 글자를 표출합니다
+	CString str;
+	str.Format(_T("X=%d, Y= %d"), mouse_point, mouse_point.y);
+	dc.TextOut(mouse_point.x, mouse_point.y, str);
 
 	g_ipRenderTarget->EndDraw();
 
-
-
-
-
-	/*HRESULT hr = S_OK;
-	hr = CreateDeviceResources();*/
-
-
-	//if (SUCCEEDED(hr))
-	//{
-	//	g_ipRenderTarget->BeginDraw();
-
-	//	g_ipRenderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
-
-	//	CD2DPointF d2dStartPoint;
-	//	d2dStartPoint.x = mouse_point.x;
-	//	d2dStartPoint.y = mouse_point.y;
-	//	double radius =20.0f;
-	//	D2D1_ELLIPSE ellipse = D2D1::Ellipse(d2dStartPoint, (FLOAT)radius, (FLOAT)radius);	//거리를 반지름으로 가지는 원을 그립니다
-
-	//	ID2D1SolidColorBrush *p_yellow_brush = NULL;
-	//	// 원을 그리는데 사용할 Brush 객체를 노란색으로 생성한다. 
-	//	g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 0.0f), &p_yellow_brush);
-
-	//	g_ipRenderTarget->FillEllipse(ellipse, p_yellow_brush);
-	//}
 
 	CDialogEx::OnPaint();
 
@@ -220,8 +190,7 @@ HCURSOR CMFCTESTPROJECTDlg::OnQueryDragIcon()
 
 void CMFCTESTPROJECTDlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-
+	rect_pos.push_back(point);
 
 	//rect_start_pos.push_back(point);
 	CDialogEx::OnLButtonDown(nFlags, point);
@@ -232,52 +201,57 @@ void CMFCTESTPROJECTDlg::OnLButtonUp(UINT nFlags, CPoint point) //실시간으�
 {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 	//rect_start_pos.pop_back();
+	if (rect_pos.size()==0)
+	{
+		return;
+	}
+	rect_pos.pop_back();
+
 	CDialogEx::OnLButtonUp(nFlags, point);
 }
 
 //다이렉트 2D로 선그리기(실시간 선그리기)
 void CMFCTESTPROJECTDlg::OnMouseMove(UINT nFlags, CPoint point)
 {
-
 	mouse_point = point;
-	MouseMovingPoint(mouse_point); //마우스의 위치를 계속 화면에 표출합니다.
-
-
 	g_ipRenderTarget->BeginDraw();
 	g_ipRenderTarget->Clear(D2D1::ColorF(0.0f, 0.8f, 1.0f)); //도면 영역을 지정된 색상으로 지웁니다.
+
+
 
 	D2D1_ELLIPSE my_region;
 	my_region.point.x = mouse_point.x; //x위치
 	my_region.point.y = mouse_point.y;//y 위치
-	my_region.radiusX = 50.0f; //넓이 반지름
-	my_region.radiusY = 15.0f; //높이 반지름
+	my_region.radiusX = 10.0f; //넓이 반지름
+	my_region.radiusY = 10.0f; //높이 반지름
 
 	ID2D1SolidColorBrush* p_yellow_brush = NULL;
 	g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 0.0f), &p_yellow_brush);
 
 	g_ipRenderTarget->FillEllipse(my_region, p_yellow_brush);
 
+
 	p_yellow_brush->Release();
 	p_yellow_brush = nullptr;
 
+	ID2D1SolidColorBrush* p_black_brush = nullptr;
+	g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 0.0f), &p_black_brush);
+
+
+	if (rect_pos.size() != 0)
+	{
+		//가장 처음의 위치를 불러와서 첫 위치를 지정해줍니다
+		g_ipRenderTarget->DrawLine(D2D1::Point2F(rect_pos[0].x, rect_pos[0].y), D2D1::Point2F(point.x, point.y), p_black_brush, 0.5f);
+	}
 
 	g_ipRenderTarget->EndDraw();
 
+	//Invalidate();
 
 	CDialogEx::OnMouseMove(nFlags, point);
 }
 
-//마우스를 따라다니는 글자를 그립니다.
-void CMFCTESTPROJECTDlg::MouseMovingPoint(CPoint point)
-{
-	//화면에 좌표 그리는 부분은 계속 그리도록 합니다.
-	//mouse_point = point;
 
-	CClientDC dc(this);
-	CPen my_pen(PS_SOLID, 5, RGB(0, 0, 255));
-	dc.SelectObject(&my_pen);
-	SelectObject(dc, GetStockObject(NULL_BRUSH)); //펜을 설정합니다.
-}
 
 
 HRESULT CMFCTESTPROJECTDlg::CreateDeviceIndependentResources()  //factory 를 초기화합니다.
@@ -302,13 +276,13 @@ HRESULT CMFCTESTPROJECTDlg::CreateDeviceResources()  //factory 를 초기화합�
 			rc.right - rc.left,
 			rc.bottom - rc.top
 		);
-/*
-		hr = g_ipD2Factory->CreateHwndRenderTarget(
-			D2D1::RenderTargetProperties(),
-			D2D1::HwndRenderTargetProperties(hWnd, size),
-			&g_ipRenderTarget
-		);
-*/
+		/*
+				hr = g_ipD2Factory->CreateHwndRenderTarget(
+					D2D1::RenderTargetProperties(),
+					D2D1::HwndRenderTargetProperties(hWnd, size),
+					&g_ipRenderTarget
+				);
+		*/
 		hr = g_ipD2Factory->CreateHwndRenderTarget(
 			D2D1::RenderTargetProperties(),
 			D2D1::HwndRenderTargetProperties(hWnd, size),
@@ -317,38 +291,16 @@ HRESULT CMFCTESTPROJECTDlg::CreateDeviceResources()  //factory 를 초기화합�
 
 
 	}
-
-
-
 	return hr;
 }
 
 
-//이벤트를 따로 해주지않아도 여기에 이벤트를 하면 이쪽으로 넘어옵니다.
-BOOL CMFCTESTPROJECTDlg::OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult)
-{
-	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
-
-	switch (message)
-	{
-	case WM_CREATE:
-		OnCreatRenderTarget(GetSafeHwnd());
-		break;
-	case WM_PAINT:
-		break;
-	case WM_RBUTTONDOWN:
-		break;
-
-	default:
-		break;
-	}
-	return CDialogEx::OnWndMsg(message, wParam, lParam, pResult);
-}
 
 
 
 void CMFCTESTPROJECTDlg::OnCreatRenderTarget(HWND hWnd)
 {
+	HRESULT hr = CreateDeviceIndependentResources();
 	RECT r;
 	GetClientRect(&r);
 
