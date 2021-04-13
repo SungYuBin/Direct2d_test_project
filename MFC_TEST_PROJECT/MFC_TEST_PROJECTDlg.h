@@ -27,7 +27,6 @@ public:
 
 private:
 	std::vector<CPoint> rect_pos; //마우스가 클릭되었을때 좌표를 저장할 변수 
-	CPoint mouse_point;
 
 // 구현입니다.
 protected:
@@ -42,27 +41,12 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	ID2D1Factory* g_ipD2Factory = nullptr; //초반에만 초기화 하는 내역
-
-
 	ID2D1HwndRenderTarget* g_ipRenderTarget = nullptr; //계속 생성되는 객체
-	//CDCRenderTarget * g_ipRenderTarget = nullptr; //계속 생성되는 객체
-//	CD2DSolidColorBrush *m_pPlackBrush;
-
-	HWND hWnd;
-
-	HRESULT CreateDeviceIndependentResources();
-	HRESULT CreateDeviceResources();
-
-	//void OnPaintRenderTarget();
 	void OnCreatRenderTarget(HWND hWnd);
 
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
-	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 
 public:
-
-	//void MouseMovingPoint(CPoint point);
-	//virtual BOOL OnWndMsg(UINT message, WPARAM wParam, LPARAM lParam, LRESULT* pResult);
 };
   

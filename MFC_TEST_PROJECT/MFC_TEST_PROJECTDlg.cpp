@@ -132,40 +132,56 @@ void CMFCTESTPROJECTDlg::OnSysCommand(UINT nID, LPARAM lParam)
 //
 void CMFCTESTPROJECTDlg::OnPaint() //그림을 유지합니다.
 {
-	g_ipRenderTarget->BeginDraw();
-	g_ipRenderTarget->Clear(D2D1::ColorF(0.0f, 0.8f, 1.0f)); //도면 영역을 지정된 색상으로 지웁니다.
-
-	D2D1_ELLIPSE my_region;
-	my_region.point.x = mouse_point.x; //x위치
-	my_region.point.y = mouse_point.y;//y 위치
-	my_region.radiusX = 50.0f; //넓이 반지름
-	my_region.radiusY = 15.0f; //높이 반지름
-
-	ID2D1SolidColorBrush* p_yellow_brush = NULL;
-	g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 0.0f), &p_yellow_brush);
-
-	g_ipRenderTarget->FillEllipse(my_region, p_yellow_brush);
-
-	p_yellow_brush->Release();
-	p_yellow_brush = nullptr;
-
-	ID2D1SolidColorBrush* p_black_brush = nullptr;
-	g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 0.0f), &p_black_brush);
-
-
-	if (rect_pos.size() != 0)
+	//갯수가 하나도없는 경우 return 합니다
+	if (rect_pos.size() == 0)
 	{
-		//가장 처음의 위치를 불러와서 첫 위치를 지정해줍니다
-		//rect_pos[0];
-		//g_ipRenderTarget->DrawLine(D2D1::Point2F(rect_pos[0].x, rect_pos[0].y), D2D1::Point2F(point.x, point.y), p_black_brush, 0.5f);
+		return;
 	}
 
-	CPaintDC dc(this); //화면에 글자를 표출합니다
-	CString str;
-	str.Format(_T("X=%d, Y= %d"), mouse_point, mouse_point.y);
-	dc.TextOut(mouse_point.x, mouse_point.y, str);
 
-	g_ipRenderTarget->EndDraw();
+	//g_ipRenderTarget->BeginDraw();
+
+	//if (rect_pos.size() == 1) //선택했던 점이 하나인경우
+	//{
+	//	g_ipRenderTarget->Clear(D2D1::ColorF(0.0f, 0.8f, 1.0f)); //도면 영역을 지정된 색상으로 지웁니다.
+
+	//	D2D1_ELLIPSE my_region;
+	//	my_region.point.x = rect_pos[0].x; //x위치
+	//	my_region.point.y = rect_pos[0].y;//y 위치
+	//	my_region.radiusX = 5.0f; //넓이 반지름
+	//	my_region.radiusY = 5.0f; //높이 반지름
+
+	//	ID2D1SolidColorBrush* p_yellow_brush = NULL;
+	//	g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 0.0f), &p_yellow_brush);
+
+	//	g_ipRenderTarget->FillEllipse(my_region, p_yellow_brush);
+
+	//	p_yellow_brush->Release();
+	//	p_yellow_brush = nullptr;
+	//}
+	//else if (rect_pos.size() > 1)
+	//{
+	//	for (int i = 1; i < rect_pos.size(); i++)
+	//	{
+	//		g_ipRenderTarget->Clear(D2D1::ColorF(0.0f, 0.8f, 1.0f)); //도면 영역을 지정된 색상으로 지웁니다.
+
+	//		D2D1_ELLIPSE my_region;
+	//		my_region.point.x = rect_pos[i].x; //x위치
+	//		my_region.point.y = rect_pos[i].y;//y 위치
+	//		my_region.radiusX = 5.0f; //넓이 반지름
+	//		my_region.radiusY = 5.0f; //높이 반지름
+
+	//		ID2D1SolidColorBrush* p_yellow_brush = NULL;
+	//		g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 0.0f), &p_yellow_brush);
+
+	//		g_ipRenderTarget->FillEllipse(my_region, p_yellow_brush);
+
+	//		p_yellow_brush->Release();
+	//		p_yellow_brush = nullptr;
+	//	}
+	//}
+
+	//g_ipRenderTarget->EndDraw();
 
 
 	CDialogEx::OnPaint();
@@ -197,110 +213,160 @@ void CMFCTESTPROJECTDlg::OnLButtonDown(UINT nFlags, CPoint point)
 }
 
 //화면에 버튼을 클릭하고 놓았을때의 이벤트
-void CMFCTESTPROJECTDlg::OnLButtonUp(UINT nFlags, CPoint point) //실시간으로 그리진않습니다.
-{
-	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-	//rect_start_pos.pop_back();
-	if (rect_pos.size()==0)
-	{
-		return;
-	}
-	rect_pos.pop_back();
-
-	CDialogEx::OnLButtonUp(nFlags, point);
-}
+//void CMFCTESTPROJECTDlg::OnLButtonUp(UINT nFlags, CPoint point) //실시간으로 그리진않습니다.
+//{
+//	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+//	//rect_start_pos.pop_back();
+//	if (rect_pos.size()==0)
+//	{
+//		return;
+//	}
+//	rect_pos.pop_back();
+//
+//	CDialogEx::OnLButtonUp(nFlags, point);
+//}
 
 //다이렉트 2D로 선그리기(실시간 선그리기)
 void CMFCTESTPROJECTDlg::OnMouseMove(UINT nFlags, CPoint point)
 {
-	mouse_point = point;
+
+	if (rect_pos.size() == 0)
+	{
+		return;
+	}
+
 	g_ipRenderTarget->BeginDraw();
 	g_ipRenderTarget->Clear(D2D1::ColorF(0.0f, 0.8f, 1.0f)); //도면 영역을 지정된 색상으로 지웁니다.
 
-
-
-	D2D1_ELLIPSE my_region;
-	my_region.point.x = mouse_point.x; //x위치
-	my_region.point.y = mouse_point.y;//y 위치
-	my_region.radiusX = 10.0f; //넓이 반지름
-	my_region.radiusY = 10.0f; //높이 반지름
-
-	ID2D1SolidColorBrush* p_yellow_brush = NULL;
-	g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 0.0f), &p_yellow_brush);
-
-	g_ipRenderTarget->FillEllipse(my_region, p_yellow_brush);
-
-
-	p_yellow_brush->Release();
-	p_yellow_brush = nullptr;
-
-	ID2D1SolidColorBrush* p_black_brush = nullptr;
-	g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 0.0f), &p_black_brush);
-
-
-	if (rect_pos.size() != 0)
+	if (rect_pos.size() == 1)
 	{
+
+		D2D1_ELLIPSE my_region;
+
+
+		my_region.point.x = rect_pos[0].x; //x위치
+		my_region.point.y = rect_pos[0].y;//y 위치
+		my_region.radiusX = 5.0f; //넓이 반지름
+		my_region.radiusY = 5.0f; //높이 반지름
+
+		ID2D1SolidColorBrush* p_yellow_brush = NULL;
+		g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 0.0f), &p_yellow_brush);
+
+		g_ipRenderTarget->FillEllipse(my_region, p_yellow_brush);
+
+		p_yellow_brush->Release();
+		p_yellow_brush = nullptr;
+
+		ID2D1SolidColorBrush* p_black_brush = nullptr;
+		g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 0.0f), &p_black_brush);
 		//가장 처음의 위치를 불러와서 첫 위치를 지정해줍니다
-		g_ipRenderTarget->DrawLine(D2D1::Point2F(rect_pos[0].x, rect_pos[0].y), D2D1::Point2F(point.x, point.y), p_black_brush, 0.5f);
+		g_ipRenderTarget->DrawLine(D2D1::Point2F(rect_pos[0].x, rect_pos[0].y), D2D1::Point2F(point.x, point.y), p_black_brush, 0.50f);
+
+	}
+	else if (rect_pos.size() > 1)
+	{
+		for (int i = 0; i < rect_pos.size() - 1; i++)
+		{
+			D2D1_ELLIPSE my_region;
+			my_region.point.x = rect_pos[i].x; //x위치
+			my_region.point.y = rect_pos[i].y;//y 위치
+			my_region.radiusX = 5.0f; //넓이 반지름
+			my_region.radiusY = 5.0f; //높이 반지름
+
+			ID2D1SolidColorBrush* p_yellow_brush = NULL;
+			g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 0.0f), &p_yellow_brush);
+
+			g_ipRenderTarget->FillEllipse(my_region, p_yellow_brush);
+
+			p_yellow_brush->Release();
+			p_yellow_brush = nullptr;
+
+			ID2D1SolidColorBrush* p_black_brush = nullptr;
+			g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 0.0f), &p_black_brush);
+
+			//가장 처음의 위치를 불러와서 첫 위치를 지정해줍니다
+			g_ipRenderTarget->DrawLine(D2D1::Point2F(rect_pos[i].x, rect_pos[i].y), D2D1::Point2F(rect_pos[i + 1].x, rect_pos[i + 1].y), p_black_brush, 0.50f);
+		}
+
+
+		D2D1_ELLIPSE my_region;
+		my_region.point.x = rect_pos[rect_pos.size() - 1].x; //x위치
+		my_region.point.y = rect_pos[rect_pos.size() - 1].y;//y 위치
+		my_region.radiusX = 5.0f; //넓이 반지름
+		my_region.radiusY = 5.0f; //높이 반지름
+
+		ID2D1SolidColorBrush* p_yellow_brush = NULL;
+		g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 0.0f), &p_yellow_brush);
+
+		g_ipRenderTarget->FillEllipse(my_region, p_yellow_brush);
+
+		p_yellow_brush->Release();
+		p_yellow_brush = nullptr;
+
+		ID2D1SolidColorBrush* p_black_brush = nullptr;
+		g_ipRenderTarget->CreateSolidColorBrush(D2D1::ColorF(0.0f, 0.0f, 0.0f), &p_black_brush);
+
+		//가장 처음의 위치를 불러와서 첫 위치를 지정해줍니다
+		g_ipRenderTarget->DrawLine(D2D1::Point2F(rect_pos[rect_pos.size() - 1].x, rect_pos[rect_pos.size() - 1].y), D2D1::Point2F(point.x, point.y), p_black_brush, 0.50f);
+
 	}
 
 	g_ipRenderTarget->EndDraw();
-
-	//Invalidate();
 
 	CDialogEx::OnMouseMove(nFlags, point);
 }
 
 
 
+//
+//HRESULT CMFCTESTPROJECTDlg::CreateDeviceIndependentResources()  //factory 를 초기화합니다.
+//{
+//	HRESULT hr = S_OK;
+//
+//	hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &g_ipD2Factory);
+//	return hr;
+//}
 
-HRESULT CMFCTESTPROJECTDlg::CreateDeviceIndependentResources()  //factory 를 초기화합니다.
-{
-	HRESULT hr = S_OK;
-
-	hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &g_ipD2Factory);
-	return hr;
-}
-
-
-HRESULT CMFCTESTPROJECTDlg::CreateDeviceResources()  //factory 를 초기화합니다.
-{
-	HRESULT hr = S_OK;
-
-	if (!g_ipRenderTarget)
-	{
-		RECT rc;
-		GetClientRect(&rc);
-
-		D2D1_SIZE_U size = D2D1::SizeU(
-			rc.right - rc.left,
-			rc.bottom - rc.top
-		);
-		/*
-				hr = g_ipD2Factory->CreateHwndRenderTarget(
-					D2D1::RenderTargetProperties(),
-					D2D1::HwndRenderTargetProperties(hWnd, size),
-					&g_ipRenderTarget
-				);
-		*/
-		hr = g_ipD2Factory->CreateHwndRenderTarget(
-			D2D1::RenderTargetProperties(),
-			D2D1::HwndRenderTargetProperties(hWnd, size),
-			&g_ipRenderTarget
-		);
-
-
-	}
-	return hr;
-}
-
+//
+//HRESULT CMFCTESTPROJECTDlg::CreateDeviceResources()  //factory 를 초기화합니다.
+//{
+//	HRESULT hr = S_OK;
+//
+//	if (!g_ipRenderTarget)
+//	{
+//		RECT rc;
+//		GetClientRect(&rc);
+//
+//		D2D1_SIZE_U size = D2D1::SizeU(
+//			rc.right - rc.left,
+//			rc.bottom - rc.top
+//		);
+//		/*
+//				hr = g_ipD2Factory->CreateHwndRenderTarget(
+//					D2D1::RenderTargetProperties(),
+//					D2D1::HwndRenderTargetProperties(hWnd, size),
+//					&g_ipRenderTarget
+//				);
+//		*/
+//		hr = g_ipD2Factory->CreateHwndRenderTarget(
+//			D2D1::RenderTargetProperties(),
+//			D2D1::HwndRenderTargetProperties(hWnd, size),
+//			&g_ipRenderTarget
+//		);
+//
+//
+//	}
+//	return hr;
+//}
+//
 
 
 
 
 void CMFCTESTPROJECTDlg::OnCreatRenderTarget(HWND hWnd)
 {
-	HRESULT hr = CreateDeviceIndependentResources();
+	HRESULT hr;
+	hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &g_ipD2Factory);
 	RECT r;
 	GetClientRect(&r);
 
